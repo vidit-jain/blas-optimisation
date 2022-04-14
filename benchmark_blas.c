@@ -33,12 +33,18 @@ void printBenchmark(int N, int operations, int count, float calcTime, int size) 
 	printf("Computing Throughput (GFLOPS):\t%-3.3f\n\n", gflops);
 }
 
-void bench_cblas_sscal(const int N) {
+void printArrays(int N, int operations, int count, float calcTime, int size) {
+	float gflops = operations / calcTime * 1e-9;
+	float memoryBandwidth = size * count * 1e-9 / calcTime; 
+	printf("%d,%f,%f,", N, gflops, memoryBandwidth);
+}
+
+void bench_cblas_sscal(const int N, int printStyle) {
 	const float alpha = randomAlphaf(); 
 	float *X = randomVectorf(N) ;
 	CALCTIME(cblas_sscal, N, alpha, X, 1);
-	int operations = N;
-	int count = N;
-	int size = 4;
-	printBenchmark(N, operations, count, calcTime, size);
+	if (printStyle == 1)
+		printBenchmark(N, N, N, calcTime, 4);
+	else 
+		printArrays(N, N, N, calcTime, 4);
 }

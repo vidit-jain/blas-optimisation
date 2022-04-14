@@ -1,6 +1,6 @@
 #ifndef BCBLASH_H
 #define BCBLASH_H
 
-void bench_cblas_sscal(const int N);
+void bench_cblas_sscal(const int N, int printStyle);
 
 #endif
