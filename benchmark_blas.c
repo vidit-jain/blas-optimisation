@@ -23,13 +23,14 @@ double tock(struct timeval *t) {
 }
 
 
-void printBenchmark(int operations, int count, float calcTime, int size) {
+void printBenchmark(int N, int operations, int count, float calcTime, int size) {
 	float gflops = operations / calcTime * 1e-9;
 	float memoryBandwidth = size * count * 1e-9 / calcTime; 
 	float timeMS = calcTime * 1000;
+	printf("\nValue of N:\t\t\t%d\n", N);
 	printf("Time (ms):\t\t\t%-3.3f\n", timeMS);
 	printf("Memory bandwidth (GB/s):\t%-3.3f\n", memoryBandwidth);
-	printf("Computing Throughput (GFLOPS):\t%-3.3f\n", gflops);
+	printf("Computing Throughput (GFLOPS):\t%-3.3f\n\n", gflops);
 }
 
 void bench_cblas_sscal(const int N) {
@@ -39,5 +40,5 @@ void bench_cblas_sscal(const int N) {
 	int operations = N;
 	int count = N;
 	int size = 4;
-	printBenchmark(operations, count, calcTime, size);
+	printBenchmark(N, operations, count, calcTime, size);
 }
