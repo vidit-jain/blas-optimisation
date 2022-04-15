@@ -18,11 +18,13 @@ int main(int argc, char* argv[]) {
 	if (style == 1)
 		printf("Benchmarking %s\n", function);
 
-	if (!strcmp("sscal", function)) {
-		long N = startingN;
-		for (int i = 0; i < iterations; i++, N *= factor) {
-			bench_cblas_sscal(N, style);
-			fflush(stdout);
-		}	
-	}
+	void (*f)(int, int);
+	if (!strcmp("sscal", function)) f = &bench_cblas_sscal;
+	else if (!strcmp("sdot", function)) f = &bench_cblas_sdot;
+	else f = &bench_cblas_sscal;
+
+	long N = startingN;
+	for (int i = 0; i < iterations; i++, N *= factor) {
+		f(N, style);
+	}	
 }
