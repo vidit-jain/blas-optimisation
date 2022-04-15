@@ -21,6 +21,7 @@ int main(int argc, char* argv[]) {
 	void (*f)(int, int);
 	if (!strcmp("sscal", function)) f = &bench_cblas_sscal;
 	else if (!strcmp("sdot", function)) f = &bench_cblas_sdot;
+	else if (!strcmp("saxpy", function)) f = &bench_cblas_saxpy;
 	else f = &bench_cblas_sscal;
 
 	long N = startingN;
