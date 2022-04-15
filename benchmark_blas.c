@@ -23,14 +23,19 @@ double tock(struct timeval *t) {
 }
 
 
-void printBenchmark(int N, int operations, int count, float calcTime, int size) {
+void printBenchmark(int N, int operations, int count, float calcTime, int size, int printStyle) {
 	float gflops = 1ll * operations / calcTime * 1e-9;
 	float memoryBandwidth = 1ll * size * count * 1e-9 / calcTime; 
 	float timeMS = calcTime * 1000;
-	printf("\nValue of N:\t\t\t%d\n", N);
-	printf("Time (ms):\t\t\t%-3.3f\n", timeMS);
-	printf("Memory bandwidth (GB/s):\t%-3.3f\n", memoryBandwidth);
-	printf("Computing Throughput (GFLOPS):\t%-3.3f\n\n", gflops);
+	if (printStyle == 1) {
+		printf("\nValue of N:\t\t\t%d\n", N);
+		printf("Time (ms):\t\t\t%-3.3f\n", timeMS);
+		printf("Memory bandwidth (GB/s):\t%-3.3f\n", memoryBandwidth);
+		printf("Computing Throughput (GFLOPS):\t%-3.3f\n\n", gflops);
+	}
+	else {
+		printf("%d,%f,%f,", N, gflops, memoryBandwidth);
+	}
 }
 
 void printArrays(int N, int operations, int count, float calcTime, int size) {
@@ -43,10 +48,7 @@ void bench_cblas_sscal(const int N, int printStyle) {
 	const float alpha = randomAlphaf(); 
 	float *X = randomVectorf(N) ;
 	CALCTIME(cblas_sscal, N, alpha, X, 1);
-	if (printStyle == 1)
-		printBenchmark(N, N, N, calcTime, 4);
-	else 
-		printArrays(N, N, N, calcTime, 4);
+	printBenchmark(N, N, N, calcTime, 4, printStyle);
 }
 
 void bench_cblas_sdot(const int N, int printStyle) {
@@ -55,10 +57,7 @@ void bench_cblas_sdot(const int N, int printStyle) {
 	CALCTIME(cblas_sdot, N, X, 1, Y, 1);
 	int operations = 2 * N;
 	int count = 2 * N;
-	if (printStyle == 1)
-		printBenchmark(N, operations, count, calcTime, 4);
-	else 
-		printArrays(N, operations, count, calcTime, 4);
+	printBenchmark(N, operations, count, calcTime, 4, printStyle);
 }
 
 void bench_cblas_saxpy(const int N, int printStyle) {
@@ -68,8 +67,5 @@ void bench_cblas_saxpy(const int N, int printStyle) {
 	CALCTIME(cblas_saxpy, N, alpha, X, 1, Y, 1);
 	int operations = 2 * N;
 	int count = 2 * N;
-	if (printStyle == 1)
-		printBenchmark(N, operations, count, calcTime, 4);
-	else 
-		printArrays(N, operations, count, calcTime, 4);
+	printBenchmark(N, operations, count, calcTime, 4, printStyle);
 }
