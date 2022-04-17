@@ -87,15 +87,31 @@ void cblas_sgemv(const enum CBLAS_ORDER order,
                  const float alpha, const float *A, const int lda,
                  const float *X, const int incX, const float beta,
                  float *Y, const int incY) {
-	if (order == CblasRowMajor && TransA == CblasNoTrans) {
+	int n = N;
+	int m = M;
+	if (TransA != CblasNoTrans) {
+		n = M;
+		m = N;
+	}
+	cblas_sscal(m, beta, Y, incY);
+	if ((order == CblasRowMajor && TransA == CblasNoTrans) || 
+			(order == CblasRowMajor && TransA != CblasNoTrans)) {
 #pragma omp parallel for
-		for (int i = 0; i < M; i++) {
-			Y[i * incY] *= beta;
+		for (int i = 0; i < m; i++) {
 			float value = 0.0;
-			for (int j = 0; j < N; j++) {
+			for (int j = 0; j < n; j++) {
 				value += X[j * incX] * A[(lda * i + j)];
 			}
 			Y[i * incY] += alpha * value;
+		}
+	}
+	else {
+#pragma omp parallel for
+		for (int i = 0; i < n; i++) {
+			float value = alpha * X[i * incX];
+			for (int j = 0; j < m; j++) {
+				Y[j * incY] += value * A[(lda * i + j)];
+			}
 		}
 	}
 }
