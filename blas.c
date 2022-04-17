@@ -22,10 +22,12 @@ int main(int argc, char* argv[]) {
 	if (!strcmp("sscal", function)) f = &bench_cblas_sscal;
 	else if (!strcmp("sdot", function)) f = &bench_cblas_sdot;
 	else if (!strcmp("saxpy", function)) f = &bench_cblas_saxpy;
-	else f = &bench_cblas_sscal;
+	else if (!strcmp("sgemv", function)) f = &bench_cblas_sgemv;
+	else f = NULL;
 
 	long N = startingN;
 	for (int i = 0; i < iterations; i++, N *= factor) {
-		f(N, style);
+		if (f)
+			f(N, style);
 	}	
 }

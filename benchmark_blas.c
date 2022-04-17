@@ -1,9 +1,9 @@
 #include <stdlib.h>
-#include "cblas.h"
 #include <stdio.h>
 #include <time.h>
 #include <sys/time.h>
 #include "helper.h"
+#include "benchmark_blas.h"
 #define CALCTIME(functionName, args...) \
 	struct timeval calc;\
 	tick(&calc);\
@@ -38,12 +38,6 @@ void printBenchmark(int N, int operations, int count, float calcTime, int size, 
 	}
 }
 
-void printArrays(int N, int operations, int count, float calcTime, int size) {
-	float gflops = operations / calcTime * 1e-9;
-	float memoryBandwidth = size * count * 1e-9 / calcTime; 
-	printf("%d,%f,%f,", N, gflops, memoryBandwidth);
-}
-
 void bench_cblas_sscal(const int N, int printStyle) {
 	const float alpha = randomAlphaf(); 
 	float *X = randomVectorf(N) ;
@@ -67,5 +61,17 @@ void bench_cblas_saxpy(const int N, int printStyle) {
 	CALCTIME(cblas_saxpy, N, alpha, X, 1, Y, 1);
 	int operations = 2 * N;
 	int count = 2 * N;
+	printBenchmark(N, operations, count, calcTime, 4, printStyle);
+}
+
+void bench_cblas_sgemv(const int N, int printStyle) {
+	const float alpha = randomAlphaf();
+	const float beta = randomAlphaf();
+	float *X = randomVectorf(N);
+	float *Y = randomVectorf(N);
+	float *A = randomMatrixf(N, N);
+	CALCTIME(cblas_sgemv, CblasRowMajor, CblasNoTrans, N, N, alpha, A, 1, X, 1, beta, Y, 1);
+	int operations = N * (3 + 2 * N);
+	int count = N * N + N + N;
 	printBenchmark(N, operations, count, calcTime, 4, printStyle);
 }

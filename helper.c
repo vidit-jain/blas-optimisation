@@ -19,3 +19,19 @@ double* randomVectord(const int N) {
 	}
 	return X;
 }
+
+float* randomMatrixf(const int M, const int N) {
+	float *A = (float*) malloc(M * N * sizeof(float));
+	for (int i = 0; i < M * N; i++) {
+		A[i] = (float) rand() / RAND_MAX;
+	}
+	return A;
+}
+
+double* randomMatrixd(const int M, const int N) {
+	double *A = (double*) malloc(M * N * sizeof(double));
+	for (int i = 0; i < M * N; i++) {
+		A[i] = (double) rand() / RAND_MAX;
+	}
+	return A;
+}
