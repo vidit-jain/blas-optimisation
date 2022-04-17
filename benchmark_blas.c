@@ -45,6 +45,13 @@ void bench_cblas_sscal(const int N, int printStyle) {
 	printBenchmark(N, N, N, calcTime, 4, printStyle);
 }
 
+void bench_cblas_dscal(const int N, int printStyle) {
+	const double alpha = randomAlphad(); 
+	double *X = randomVectord(N) ;
+	CALCTIME(cblas_dscal, N, alpha, X, 1);
+	printBenchmark(N, N, N, calcTime, 8, printStyle);
+}
+
 void bench_cblas_sdot(const int N, int printStyle) {
 	float *X = randomVectorf(N);
 	float *Y = randomVectorf(N);
