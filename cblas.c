@@ -213,6 +213,7 @@ void cblas_sgemm(const enum CBLAS_ORDER Order, const enum CBLAS_TRANSPOSE TransA
 		Transn1 = TransB;
 		Transn2 = TransA;
 	}
+#pragma omp parallel for
 	for (int i = 0; i < n1; i++) {
 		for (int j = 0; j < n2; j++) {
 			C[ldc * i + j] *= beta;	
@@ -220,6 +221,7 @@ void cblas_sgemm(const enum CBLAS_ORDER Order, const enum CBLAS_TRANSPOSE TransA
 	}
 	if (Transn1 == CblasNoTrans && Transn2 == CblasNoTrans) {
 		for (int k = 0; k < K; k++) {
+#pragma omp parallel for
 			for (int i = 0; i < n1; i++) {
 				const float value = alpha * N1[ldn1 * i + k];
 				for (int j = 0; j < n2; j++) {
@@ -229,6 +231,7 @@ void cblas_sgemm(const enum CBLAS_ORDER Order, const enum CBLAS_TRANSPOSE TransA
 		}
 	}
 	else if (Transn1 == CblasNoTrans && Transn2 != CblasNoTrans) {
+#pragma omp parallel for
 		for (int i = 0; i < n1; i++) {
 			for (int j = 0; j < n2; j++) {
 				float value = 0.0;
@@ -241,6 +244,7 @@ void cblas_sgemm(const enum CBLAS_ORDER Order, const enum CBLAS_TRANSPOSE TransA
 	}
 	else if (Transn1 != CblasNoTrans && Transn2 == CblasNoTrans) {
 		for (int k = 0; k < K; k++) {
+#pragma omp parallel for
 			for (int i = 0; i < n1; i++) {
 				const float value = alpha * N1[ldn1 * k + i];
 				for (int j = 0; j < n2; j++) {
@@ -250,6 +254,7 @@ void cblas_sgemm(const enum CBLAS_ORDER Order, const enum CBLAS_TRANSPOSE TransA
 		}
 	}
 	else {
+#pragma omp parallel for
 		for (int i = 0; i < n1; i++) {
 			for (int j = 0; j < n2; j++) {
 				float value = 0.0;
@@ -282,6 +287,7 @@ void cblas_dgemm(const enum CBLAS_ORDER Order, const enum CBLAS_TRANSPOSE TransA
 		Transn1 = TransB;
 		Transn2 = TransA;
 	}
+#pragma omp parallel for
 	for (int i = 0; i < n1; i++) {
 		for (int j = 0; j < n2; j++) {
 			C[ldc * i + j] *= beta;	
@@ -289,6 +295,7 @@ void cblas_dgemm(const enum CBLAS_ORDER Order, const enum CBLAS_TRANSPOSE TransA
 	}
 	if (Transn1 == CblasNoTrans && Transn2 == CblasNoTrans) {
 		for (int k = 0; k < K; k++) {
+#pragma omp parallel for
 			for (int i = 0; i < n1; i++) {
 				const double value = alpha * N1[ldn1 * i + k];
 				for (int j = 0; j < n2; j++) {
@@ -298,6 +305,7 @@ void cblas_dgemm(const enum CBLAS_ORDER Order, const enum CBLAS_TRANSPOSE TransA
 		}
 	}
 	else if (Transn1 == CblasNoTrans && Transn2 != CblasNoTrans) {
+#pragma omp parallel for
 		for (int i = 0; i < n1; i++) {
 			for (int j = 0; j < n2; j++) {
 				double value = 0.0;
@@ -310,6 +318,7 @@ void cblas_dgemm(const enum CBLAS_ORDER Order, const enum CBLAS_TRANSPOSE TransA
 	}
 	else if (Transn1 != CblasNoTrans && Transn2 == CblasNoTrans) {
 		for (int k = 0; k < K; k++) {
+#pragma omp parallel for
 			for (int i = 0; i < n1; i++) {
 				const double value = alpha * N1[ldn1 * k + i];
 				for (int j = 0; j < n2; j++) {
@@ -319,6 +328,7 @@ void cblas_dgemm(const enum CBLAS_ORDER Order, const enum CBLAS_TRANSPOSE TransA
 		}
 	}
 	else {
+#pragma omp parallel for
 		for (int i = 0; i < n1; i++) {
 			for (int j = 0; j < n2; j++) {
 				double value = 0.0;

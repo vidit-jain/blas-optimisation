@@ -13,4 +13,5 @@ void bench_cblas_ddot(const int N, int printStyle);
 void bench_cblas_daxpy(const int N, int printStyle);
 void bench_cblas_dgemv(const int N, int printStyle);
 void bench_cblas_dgemm(const int N, int printStyle);
+
 #endif

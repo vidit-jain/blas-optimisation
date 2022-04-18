@@ -3,6 +3,14 @@
 #include <stdio.h>
 #include <time.h>
 #include <stdlib.h>
+int funcCount = 10;
+char* functionNames[] = {"sscal", "dscal", "sdot", "ddot", "saxpy", "daxpy",
+						"sgemv", "dgemv", "sgemm", "dgemm"};
+void (*fp[])(int, int) = {&bench_cblas_sscal, &bench_cblas_dscal, &bench_cblas_sdot, 
+						&bench_cblas_ddot, &bench_cblas_saxpy, &bench_cblas_daxpy, 
+						&bench_cblas_sgemv, &bench_cblas_dgemv, &bench_cblas_sgemm,
+						&bench_cblas_dgemm}; 
+
 int main(int argc, char* argv[]) {
 	if (argc != 6) {
 		printf("Incorrect number of arguments passed\n");
@@ -18,14 +26,10 @@ int main(int argc, char* argv[]) {
 	if (style == 1)
 		printf("Benchmarking %s\n", function);
 
-	void (*f)(int, int);
-	if (!strcmp("sscal", function)) f = &bench_cblas_sscal;
-	else if (!strcmp("dscal", function)) f = &bench_cblas_dscal;
-	else if (!strcmp("sdot", function)) f = &bench_cblas_sdot;
-	else if (!strcmp("saxpy", function)) f = &bench_cblas_saxpy;
-	else if (!strcmp("sgemv", function)) f = &bench_cblas_sgemv;
-	else if (!strcmp("sgemm", function)) f = &bench_cblas_sgemm;
-	else f = NULL;
+	void (*f)(int, int) = NULL;
+	for (int i = 0; i < funcCount; i++) {
+		if (!strcmp(functionNames[i], function)) f = fp[i]; 
+	}
 
 	long N = startingN;
 	for (int i = 0; i < iterations; i++, N *= factor) {
