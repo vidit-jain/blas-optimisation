@@ -24,6 +24,7 @@ int main(int argc, char* argv[]) {
 	else if (!strcmp("sdot", function)) f = &bench_cblas_sdot;
 	else if (!strcmp("saxpy", function)) f = &bench_cblas_saxpy;
 	else if (!strcmp("sgemv", function)) f = &bench_cblas_sgemv;
+	else if (!strcmp("sgemm", function)) f = &bench_cblas_sgemm;
 	else f = NULL;
 
 	long N = startingN;

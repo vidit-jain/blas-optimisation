@@ -132,3 +132,72 @@ void cblas_sgemv(const enum CBLAS_ORDER order,
 	}
 }*/
 
+void cblas_sgemm(const enum CBLAS_ORDER Order, const enum CBLAS_TRANSPOSE TransA,
+                 const enum CBLAS_TRANSPOSE TransB, const int M, const int N,
+                 const int K, const float alpha, const float *A,
+                 const int lda, const float *B, const int ldb,
+                 const float beta, float *C, const int ldc) {
+
+	int n1 = M, n2 = N;
+	int ldn1 = lda, ldn2 = ldb;
+	int Transn1 = TransA, Transn2 = TransB;
+	const float *N1 = A, *N2 = B;
+	if (Order != CblasRowMajor) {
+		n1 = N;
+		n2 = M;
+		ldn1 = ldb;
+		ldn2 = lda;
+		N1 = B;
+		N2 = A;
+		Transn1 = TransB;
+		Transn2 = TransA;
+	}
+	for (int i = 0; i < n1; i++) {
+		for (int j = 0; j < n2; j++) {
+			C[ldc * i + j] *= beta;	
+		}
+	}
+	if (Transn1 == CblasNoTrans && Transn2 == CblasNoTrans) {
+		for (int k = 0; k < K; k++) {
+			for (int i = 0; i < n1; i++) {
+				const float value = alpha * N1[ldn1 * i + k];
+				for (int j = 0; j < n2; j++) {
+					C[ldc * i + j] += value * N2[ldn2 * k + j];	
+				}
+			}
+		}
+	}
+	else if (Transn1 == CblasNoTrans && Transn2 != CblasNoTrans) {
+		for (int i = 0; i < n1; i++) {
+			for (int j = 0; j < n2; j++) {
+				float value = 0.0;
+				for (int k = 0; k < K; k++) {
+					value += N1[ldn1 * i + k] * N2[ldn2 * j + k];
+				}
+				C[ldc * i + j] += alpha * value;
+			}
+		}
+	}
+	else if (Transn1 != CblasNoTrans && Transn2 == CblasNoTrans) {
+		for (int k = 0; k < K; k++) {
+			for (int i = 0; i < n1; i++) {
+				const float value = alpha * N1[ldn1 * k + i];
+				for (int j = 0; j < n2; j++) {
+					C[ldc * i + j] += value * N2[ldn2 * k + j];	
+				}
+			}
+		}
+	}
+	else {
+		for (int i = 0; i < n1; i++) {
+			for (int j = 0; j < n2; j++) {
+				float value = 0.0;
+				for (int k = 0; k < K; k++) {
+					value += N1[ldn1 * k + i] * N2[ldn2 * j + k];
+				}
+				C[ldc * i + j] += alpha * value;
+			}
+		}
+	}
+}
+

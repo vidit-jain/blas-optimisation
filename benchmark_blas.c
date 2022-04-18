@@ -23,18 +23,18 @@ double tock(struct timeval *t) {
 }
 
 
-void printBenchmark(int N, int operations, int count, float calcTime, int size, int printStyle) {
-	float gflops = 1ll * operations / calcTime * 1e-9;
-	float memoryBandwidth = 1ll * size * count * 1e-9 / calcTime; 
-	float timeMS = calcTime * 1000;
+void printBenchmark(long N, long operations, long count, float calcTime, int size, int printStyle) {
+	double gflops = 1ll * operations / calcTime * 1e-9;
+	double memoryBandwidth = 1ll * size * count * 1e-9 / calcTime; 
+	double timeMS = calcTime * 1000;
 	if (printStyle == 1) {
-		printf("\nValue of N:\t\t\t%d\n", N);
-		printf("Time (ms):\t\t\t%-3.3f\n", timeMS);
-		printf("Memory bandwidth (GB/s):\t%-3.3f\n", memoryBandwidth);
-		printf("Computing Throughput (GFLOPS):\t%-3.3f\n\n", gflops);
+		printf("\nValue of N:\t\t\t%ld\n", N);
+		printf("Time (ms):\t\t\t%-3.3lf\n", timeMS);
+		printf("Memory bandwidth (GB/s):\t%-3.3lf\n", memoryBandwidth);
+		printf("Computing Throughput (GFLOPS):\t%-3.3lf\n\n", gflops);
 	}
 	else {
-		printf("%d,%f,%f,", N, gflops, memoryBandwidth);
+		printf("%ld,%f,%f,", N, gflops, memoryBandwidth);
 	}
 }
 
@@ -81,4 +81,18 @@ void bench_cblas_sgemv(const int N, int printStyle) {
 	int operations = N * (3 + 2 * N);
 	int count = N * N + N + N;
 	printBenchmark(N, operations, count, calcTime, 4, printStyle);
+}
+
+void bench_cblas_sgemm(const int N, int printStyle) {
+	const float alpha = randomAlphaf();	
+	const float beta = randomAlphaf();	
+	float *A = randomMatrixf(N, N);
+	float *B = randomMatrixf(N, N);
+	float *C = randomMatrixf(N, N);
+	CALCTIME(cblas_sgemm, CblasRowMajor, CblasNoTrans, CblasNoTrans, N, N, 
+			N, alpha, A, N, B, N, beta, C, N);
+	long operations = 1ll * 2 * N * N * N + 3 * N * N;
+	long count = 3ll * N * N;
+	printBenchmark(N, operations, count, calcTime, 4, printStyle);
+
 }
