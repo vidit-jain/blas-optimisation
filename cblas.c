@@ -42,7 +42,7 @@ void cblas_dscal(const int N, const double alpha, double *X, const int incX) {
 float cblas_sdot(const int N, const float  *X, const int incX,
                   const float  *Y, const int incY) {
 	float value = 0.0;	
-	if (incX != 1 && incY == 1) {
+	if (0) {
 		__m256 ans = _mm256_setzero_ps();
 		for (int i = 0; i < N; i += 8) {
 			__m256 x = _mm256_loadu_ps(&X[i]);
@@ -63,6 +63,16 @@ float cblas_sdot(const int N, const float  *X, const int incX,
 	return value;
 }
 
+double cblas_ddot(const int N, const double  *X, const int incX,
+                  const double  *Y, const int incY) {
+	double value = 0.0;	
+#pragma omp parallel for reduction(+:value)
+	for (int i = 0; i < N; i++) {
+		value += X[i] * Y[i];
+	}
+	return value;
+}
+
 void cblas_saxpy(const int N, const float alpha, const float *X,
                  const int incX, float *Y, const int incY) {
 	if (incY == 1 && incX == 1) {
@@ -75,7 +85,24 @@ void cblas_saxpy(const int N, const float alpha, const float *X,
 		}
 	} else {
 		for (int i = 0; i < N; i++) {
-			Y[i * incY] = X[i * incX] * alpha + Y[i *incY];
+			Y[i * incY] = X[i * incX] * alpha + Y[i * incY];
+		}
+	}
+}
+
+void cblas_daxpy(const int N, const double alpha, const double *X,
+                 const int incX, double *Y, const int incY) {
+	if (incY == 1 && incX == 1) {
+		__m256d _alpha = _mm256_set1_pd(alpha);
+		for (int i = 0; i < N; i += 4) {
+			__m256d x = _mm256_loadu_pd(&X[i]);
+			__m256d y = _mm256_loadu_pd(&Y[i]);
+			__m256d z = _mm256_fmadd_pd(x, _alpha, y);
+			_mm256_storeu_pd(&Y[i], z);
+		}
+	} else {
+		for (int i = 0; i < N; i++) {
+			Y[i * incY] = X[i * incX] * alpha + Y[i * incY];
 		}
 	}
 }
@@ -115,6 +142,40 @@ void cblas_sgemv(const enum CBLAS_ORDER order,
 		}
 	}
 }
+
+void cblas_dgemv(const enum CBLAS_ORDER order,
+                 const enum CBLAS_TRANSPOSE TransA, const int M, const int N,
+                 const double alpha, const double *A, const int lda,
+                 const double *X, const int incX, const double beta,
+                 double *Y, const int incY) {
+	int n = N;
+	int m = M;
+	if (TransA != CblasNoTrans) {
+		n = M;
+		m = N;
+	}
+	cblas_dscal(m, beta, Y, incY);
+	if ((order == CblasRowMajor && TransA == CblasNoTrans) || 
+			(order == CblasRowMajor && TransA != CblasNoTrans)) {
+#pragma omp parallel for
+		for (int i = 0; i < m; i++) {
+			double value = 0.0;
+			for (int j = 0; j < n; j++) {
+				value += X[j * incX] * A[(lda * i + j)];
+			}
+			Y[i * incY] += alpha * value;
+		}
+	}
+	else {
+#pragma omp parallel for
+		for (int i = 0; i < n; i++) {
+			double value = alpha * X[i * incX];
+			for (int j = 0; j < m; j++) {
+				Y[j * incY] += value * A[(lda * i + j)];
+			}
+		}
+	}
+}
 // Implementation that uses sdot, sscal
 /*
 void cblas_sgemv(const enum CBLAS_ORDER order,
@@ -131,7 +192,7 @@ void cblas_sgemv(const enum CBLAS_ORDER order,
 		}
 	}
 }*/
-
+// BLAS Level 3
 void cblas_sgemm(const enum CBLAS_ORDER Order, const enum CBLAS_TRANSPOSE TransA,
                  const enum CBLAS_TRANSPOSE TransB, const int M, const int N,
                  const int K, const float alpha, const float *A,
@@ -201,3 +262,71 @@ void cblas_sgemm(const enum CBLAS_ORDER Order, const enum CBLAS_TRANSPOSE TransA
 	}
 }
 
+void cblas_dgemm(const enum CBLAS_ORDER Order, const enum CBLAS_TRANSPOSE TransA,
+                 const enum CBLAS_TRANSPOSE TransB, const int M, const int N,
+                 const int K, const double alpha, const double *A,
+                 const int lda, const double *B, const int ldb,
+                 const double beta, double *C, const int ldc) {
+
+	int n1 = M, n2 = N;
+	int ldn1 = lda, ldn2 = ldb;
+	int Transn1 = TransA, Transn2 = TransB;
+	const double *N1 = A, *N2 = B;
+	if (Order != CblasRowMajor) {
+		n1 = N;
+		n2 = M;
+		ldn1 = ldb;
+		ldn2 = lda;
+		N1 = B;
+		N2 = A;
+		Transn1 = TransB;
+		Transn2 = TransA;
+	}
+	for (int i = 0; i < n1; i++) {
+		for (int j = 0; j < n2; j++) {
+			C[ldc * i + j] *= beta;	
+		}
+	}
+	if (Transn1 == CblasNoTrans && Transn2 == CblasNoTrans) {
+		for (int k = 0; k < K; k++) {
+			for (int i = 0; i < n1; i++) {
+				const double value = alpha * N1[ldn1 * i + k];
+				for (int j = 0; j < n2; j++) {
+					C[ldc * i + j] += value * N2[ldn2 * k + j];	
+				}
+			}
+		}
+	}
+	else if (Transn1 == CblasNoTrans && Transn2 != CblasNoTrans) {
+		for (int i = 0; i < n1; i++) {
+			for (int j = 0; j < n2; j++) {
+				double value = 0.0;
+				for (int k = 0; k < K; k++) {
+					value += N1[ldn1 * i + k] * N2[ldn2 * j + k];
+				}
+				C[ldc * i + j] += alpha * value;
+			}
+		}
+	}
+	else if (Transn1 != CblasNoTrans && Transn2 == CblasNoTrans) {
+		for (int k = 0; k < K; k++) {
+			for (int i = 0; i < n1; i++) {
+				const double value = alpha * N1[ldn1 * k + i];
+				for (int j = 0; j < n2; j++) {
+					C[ldc * i + j] += value * N2[ldn2 * k + j];	
+				}
+			}
+		}
+	}
+	else {
+		for (int i = 0; i < n1; i++) {
+			for (int j = 0; j < n2; j++) {
+				double value = 0.0;
+				for (int k = 0; k < K; k++) {
+					value += N1[ldn1 * k + i] * N2[ldn2 * j + k];
+				}
+				C[ldc * i + j] += alpha * value;
+			}
+		}
+	}
+}
